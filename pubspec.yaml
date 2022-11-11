@@ -1,7 +1,7 @@
 name: eagle_provider
 description: A new Flutter package to simple manager state.
-version: 1.0.0
-homepage: https://gitlab.com/esquilo-digital/app-bolao/mobile/eagle-controller-provider.git
+version: 1.0.1
+homepage: https://github.com/firmino2611/eagle_provider
 
 environment:
   sdk: '>=2.18.4 <3.0.0'
