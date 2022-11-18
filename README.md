@@ -29,6 +29,9 @@ class HomeState extends StateController {
       title: title ?? this.title,
     );
   }
+
+  @override
+  List<Object?> get props => [status, title];
 }
 ```
 
@@ -76,7 +79,7 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var controller = ControllerProvider.of<HomeController>();
+    var controller = HomeController();
     Future.delayed(const Duration(seconds: 3)).then(
       (value) {
         controller.changeStatus();
@@ -87,7 +90,10 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Home page'),
       ),
-      body: ControllerBuilder<HomeController, HomeState>(
+      body:  ControllerConsumer<HomeController, HomeState>(
+        builderWhen: (before, after) {
+          return before.status != after.status;
+        },
         builder: (BuildContext context, state) {
           if (state.status == Status.loading) {
             return const Center(child: CircularProgressIndicator());

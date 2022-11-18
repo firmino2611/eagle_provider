@@ -43,19 +43,11 @@ class MyHomePage extends StatelessWidget {
         builderWhen: (before, after) {
           return before.name != after.name;
         },
-        listenWhen: (before, after) {
-          if (before.name == 'Lucas') {
-            print('Listemmmm');
-          }
-        },
+        listenWhen: (before, after) {},
         builder: (context, state) {
           if (state.status == Status.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          // if (state.status == Status.failure) {
-          //   return const Center(child: Text('Error'));
-          // }
 
           return Center(
             child: GestureDetector(
