@@ -29,50 +29,98 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var controller = ControllerProvider.of<HomeController>();
-    Future.delayed(const Duration(seconds: 3)).then(
-      (value) {
-        controller.changeStatus();
-      },
-    );
+    // Future.delayed(const Duration(seconds: 3)).then(
+    //   (value) {
+    //     controller.changeStatus();
+    //   },
+    // );
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home page'),
       ),
-      body: ControllerBuilder<HomeController, HomeState>(
-        builder: (BuildContext context, state) {
+      body: ControllerConsumer<HomeController, HomeState>(
+        builderWhen: (before, after) {
+          return before.name != after.name;
+        },
+        listenWhen: (before, after) {
+          if (before.name == 'Lucas') {
+            print('Listemmmm');
+          }
+        },
+        builder: (context, state) {
           if (state.status == Status.loading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return const Center(
-            child: Text('Home completed loading'),
+          // if (state.status == Status.failure) {
+          //   return const Center(child: Text('Error'));
+          // }
+
+          return Center(
+            child: GestureDetector(
+              onTap: () {
+                controller.changeName('Lucas');
+              },
+              child: Text('Home completed loading, name: ${state.name}'),
+            ),
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          controller.changeName('firmino');
+        },
+      ),
+      // body: ControllerConsumer<HomeController, HomeState>(
+      //   builderWhen: (before, after) {
+      //     return before.status != after.status;
+      //   },
+      //   builder: (BuildContext context, state) {
+      //     if (state.status == Status.loading) {
+      //       return const Center(child: CircularProgressIndicator());
+      //     }
+
+      //     return const Center(
+      //       child: Text('Home completed loading'),
+      //     );
+      //   },
+      // ),
     );
   }
 }
 
 // State
 class HomeState extends StateController {
-  HomeState({super.status});
+  const HomeState({super.status, this.name});
+
+  final String? name;
 
   @override
   copyWith({
     Status? status,
+    String? name,
   }) {
     return HomeState(
       status: status ?? this.status,
+      name: name ?? this.name,
     );
   }
+
+  @override
+  List<Object?> get props => [status, name];
 }
 
 // Controller
 class HomeController extends Controller<HomeState> {
-  HomeController() : super(HomeState());
+  HomeController() : super(const HomeState());
 
-  changeStatus() {
-    emit(state.copyWith(status: Status.success));
+  changeStatus([Status? status]) {
+    emit(state.copyWith(status: status ?? Status.success));
+  }
+
+  changeName(String name) {
+    emit(state.copyWith(name: name, status: Status.success));
+    print(state.toString());
   }
 }

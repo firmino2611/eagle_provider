@@ -1,17 +1,57 @@
+import 'package:eagle_provider/eagle_provider.dart';
 import 'package:flutter/widgets.dart';
 
-abstract class Controller<T> extends ValueNotifier<T> {
-  Controller(this.state) : super(state);
+abstract class Controller<T extends StateController> extends ValueNotifier<T> {
+  Controller(super.value) {
+    _last = value;
+  }
 
-  final T state;
+  late T _last;
+
+  T get state => value;
+  T get last => _last;
 
   emit(T state) {
+    if (_last != value) {
+      _last = value;
+    }
     value = state;
   }
 }
 
-class ControllerBuilder<C extends Controller<S>, S> extends StatelessWidget {
-  const ControllerBuilder({
+class ControlerBuilder<C extends Controller<S>, S extends StateController>
+    extends StatelessWidget {
+  const ControlerBuilder({
+    super.key,
+    required this.controller,
+    required this.builder,
+    this.builderWhen,
+  });
+
+  final C controller;
+  final Widget Function(BuildContext, S) builder;
+  final bool Function(S before, S after)? builderWhen;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<S>(
+      valueListenable: controller,
+      builder: (_, state, child) {
+        if (builderWhen != null) {
+          if (builderWhen!(controller.last, state)) {
+            return builder(context, state);
+          }
+          return builder(context, controller.last);
+        }
+        return builder(context, state);
+      },
+    );
+  }
+}
+
+class ControllerConsumer<C extends Controller<S>, S extends StateController>
+    extends StatelessWidget {
+  const ControllerConsumer({
     super.key,
     required this.builder,
     this.builderWhen,
@@ -35,12 +75,11 @@ class ControllerBuilder<C extends Controller<S>, S> extends StatelessWidget {
             );
           });
         }
-        if (builderWhen != null &&
-            builderWhen!(
-              ControllerProvider.of<C>().state,
-              state,
-            )) {
-          return builder(context, state);
+        if (builderWhen != null) {
+          if (builderWhen!(ControllerProvider.of<C>().last, state)) {
+            return builder(context, state);
+          }
+          return builder(context, ControllerProvider.of<C>().last);
         }
         return builder(context, state);
       },
