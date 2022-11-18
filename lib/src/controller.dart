@@ -19,9 +19,9 @@ abstract class Controller<T extends StateController> extends ValueNotifier<T> {
   }
 }
 
-class ControlerBuilder<C extends Controller<S>, S extends StateController>
+class ControllerBuilder<C extends Controller<S>, S extends StateController>
     extends StatelessWidget {
-  const ControlerBuilder({
+  const ControllerBuilder({
     super.key,
     required this.controller,
     required this.builder,
@@ -29,7 +29,7 @@ class ControlerBuilder<C extends Controller<S>, S extends StateController>
   });
 
   final C controller;
-  final Widget Function(BuildContext, S) builder;
+  final Widget Function(BuildContext _, S state) builder;
   final bool Function(S before, S after)? builderWhen;
 
   @override
