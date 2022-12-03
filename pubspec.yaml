@@ -1,6 +1,6 @@
 name: eagle_provider
 description: A new Flutter package to simple manager state.
-version: 1.0.3
+version: 1.0.4
 homepage: https://github.com/firmino2611/eagle_provider
 
 environment:
