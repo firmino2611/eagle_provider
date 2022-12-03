@@ -25,11 +25,13 @@ class ControllerBuilder<C extends Controller<S>, S extends StateController>
     super.key,
     required this.controller,
     required this.builder,
+    this.listenWhen,
     this.builderWhen,
   });
 
   final C controller;
   final Widget Function(BuildContext _, S state) builder;
+  final void Function(S before, S after)? listenWhen;
   final bool Function(S before, S after)? builderWhen;
 
   @override
@@ -37,6 +39,14 @@ class ControllerBuilder<C extends Controller<S>, S extends StateController>
     return ValueListenableBuilder<S>(
       valueListenable: controller,
       builder: (_, state, child) {
+        if (listenWhen != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            listenWhen!(
+              controller.state,
+              state,
+            );
+          });
+        }
         if (builderWhen != null) {
           if (builderWhen!(controller.last, state)) {
             return builder(context, state);
@@ -65,21 +75,28 @@ class ControllerConsumer<C extends Controller<S>, S extends StateController>
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<S>(
-      valueListenable: ControllerProvider.of<C>(),
+      valueListenable: ControllerProvider.of<C>(context),
       builder: (context, state, child) {
         if (listenWhen != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             listenWhen!(
-              ControllerProvider.of<C>().state,
+              ControllerProvider.of<C>(context).state,
               state,
             );
           });
         }
+
         if (builderWhen != null) {
-          if (builderWhen!(ControllerProvider.of<C>().last, state)) {
+          if (builderWhen!(
+            ControllerProvider.of<C>(context).last,
+            state,
+          )) {
             return builder(context, state);
           }
-          return builder(context, ControllerProvider.of<C>().last);
+          return builder(
+            context,
+            ControllerProvider.of<C>(context).last,
+          );
         }
         return builder(context, state);
       },
@@ -91,19 +108,25 @@ class ControllerProvider extends InheritedWidget {
   ControllerProvider({
     Key? key,
     required Widget child,
-    List<Controller>? controllers,
+    final List<Controller>? controllers,
   }) : super(key: key, child: child) {
     _controllers = controllers;
+    _controllersS = _controllers;
   }
 
-  static List<Controller>? _controllers;
+  late final List<Controller>? _controllers;
+  static List<Controller>? _controllersS;
 
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) {
     return false;
   }
 
-  static T of<T>() {
-    return _controllers!.whereType<T>().first;
+  static T of<T>(BuildContext c) {
+    var provider = c.dependOnInheritedWidgetOfExactType<ControllerProvider>();
+    if (provider == null) {
+      return ControllerProvider._controllersS!.whereType<T>().first;
+    }
+    return provider._controllers!.whereType<T>().first;
   }
 }

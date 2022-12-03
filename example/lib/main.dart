@@ -28,7 +28,7 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var controller = ControllerProvider.of<HomeController>();
+    var controller = ControllerProvider.of<HomeController>(context);
     // Future.delayed(const Duration(seconds: 3)).then(
     //   (value) {
     //     controller.changeStatus();
