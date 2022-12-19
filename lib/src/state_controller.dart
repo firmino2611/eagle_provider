@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum Status { loading, success, failure }
+enum Status { initial, loading, success, failure }
 
 abstract class StateController extends Equatable {
   const StateController({this.status = Status.loading});
