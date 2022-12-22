@@ -1,6 +1,6 @@
 name: eagle_provider
-description: A new Flutter package to simple manager state.
-version: 1.0.4
+description: A new Flutter package to simple manager state.Based on Cubit/Provider this package makes use of ValueNotifier only
+version: 1.1.0
 homepage: https://github.com/firmino2611/eagle_provider
 
 environment:

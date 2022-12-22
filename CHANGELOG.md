@@ -1,8 +1,11 @@
+## 1.1.0
+ - [add]: new status (initial)
+ - [fix]: bugs in update state
 ## 1.0.4
- - Fix bugs
+ - [Fix]: fix bugs
 ## 1.0.2
- - Fix bugs
+ - [Fix]: fix bugs
 ## 1.0.1
- - Ad home in pubspec.yalm
+ - [add]: home in pubspec.yalm
 ## 1.0.0
-  - First version, simple manager state.
+  - [start]: First version, simple manager state.

@@ -1,6 +1,14 @@
 import 'package:eagle_provider/eagle_provider.dart';
 import 'package:flutter/widgets.dart';
 
+/// Class responsible for containing the base of the controller,
+/// through which we will build our controller,
+/// which will always be a state-based type.
+///
+/// When implementing a controller extending from this one,
+/// it will be necessary to pass a valid State.
+///
+/// The controller class should be used to manipulate the state
 abstract class Controller<T extends StateController> extends ValueNotifier<T> {
   Controller(super.value) {
     _last = value;
@@ -19,6 +27,10 @@ abstract class Controller<T extends StateController> extends ValueNotifier<T> {
   }
 }
 
+/// This widget should be used to reflect changes made to its states.
+/// It contains a property called ```controller``` where
+/// you must pass the controller that the component needs to use
+/// to observe the changes.
 class ControllerBuilder<C extends Controller<S>, S extends StateController>
     extends StatelessWidget {
   const ControllerBuilder({
@@ -29,9 +41,16 @@ class ControllerBuilder<C extends Controller<S>, S extends StateController>
     this.builderWhen,
   });
 
+  /// Controller that will be used to detect changes
   final C controller;
+
+  /// Widget that will be built on the screen
   final Widget Function(BuildContext _, S state) builder;
+
+  /// Listen for state change and take some action when condition is true
   final void Function(S before, S after)? listenWhen;
+
+  /// Rebuilds the widget only when the function result is true
   final bool Function(S before, S after)? builderWhen;
 
   @override
@@ -59,6 +78,9 @@ class ControllerBuilder<C extends Controller<S>, S extends StateController>
   }
 }
 
+/// This widget should be used to reflect changes made to its states.
+/// It recovers the controllers through the injection of dependencies made
+/// in the [ControllerProvider]
 class ControllerConsumer<C extends Controller<S>, S extends StateController>
     extends StatelessWidget {
   const ControllerConsumer({
@@ -68,8 +90,13 @@ class ControllerConsumer<C extends Controller<S>, S extends StateController>
     this.listenWhen,
   });
 
+  /// Rebuilds the widget only when the function result is true
   final bool Function(S before, S after)? builderWhen;
+
+  /// Listen for state change and take some action when condition is true
   final void Function(S before, S after)? listenWhen;
+
+  /// Widget that will be built on the screen
   final Widget Function(BuildContext context, S state) builder;
 
   @override
@@ -104,6 +131,7 @@ class ControllerConsumer<C extends Controller<S>, S extends StateController>
   }
 }
 
+/// Widget used to do dependency injection
 class ControllerProvider extends InheritedWidget {
   ControllerProvider({
     Key? key,
