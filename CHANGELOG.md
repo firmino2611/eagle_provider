@@ -1,3 +1,5 @@
+## 1.1.1
+ - [fix]: Fixed issue with builder When
 ## 1.1.0
  - [add]: new status (initial)
  - [fix]: bugs in update state

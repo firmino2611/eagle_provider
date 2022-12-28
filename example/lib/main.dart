@@ -29,22 +29,24 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var controller = ControllerProvider.of<HomeController>(context);
-    // Future.delayed(const Duration(seconds: 3)).then(
-    //   (value) {
-    //     controller.changeStatus();
-    //   },
-    // );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home page'),
+        title: GestureDetector(
+          onTap: () {
+            debugPrint(controller.state.toString());
+          },
+          child: const Text('Home page'),
+        ),
       ),
       body: ControllerConsumer<HomeController, HomeState>(
         builderWhen: (before, after) {
           return before.name != after.name;
         },
+        // child: const Center(child: CircularProgressIndicator()),
         listenWhen: (before, after) {},
         builder: (context, state) {
+          debugPrint(state.toString());
           if (state.status == Status.loading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -52,32 +54,18 @@ class MyHomePage extends StatelessWidget {
           return Center(
             child: GestureDetector(
               onTap: () {
-                controller.changeName('Lucas');
+                controller.changeName('lucas', Status.loading);
               },
-              child: Text('Home completed loading, name: ${state.name}'),
+              child: Text('Status ${state.status}, name: ${state.name}'),
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          controller.changeName('firmino');
+          controller.changeName('firmino', Status.success);
         },
       ),
-      // body: ControllerConsumer<HomeController, HomeState>(
-      //   builderWhen: (before, after) {
-      //     return before.status != after.status;
-      //   },
-      //   builder: (BuildContext context, state) {
-      //     if (state.status == Status.loading) {
-      //       return const Center(child: CircularProgressIndicator());
-      //     }
-
-      //     return const Center(
-      //       child: Text('Home completed loading'),
-      //     );
-      //   },
-      // ),
     );
   }
 }
@@ -111,8 +99,7 @@ class HomeController extends Controller<HomeState> {
     emit(state.copyWith(status: status ?? Status.success));
   }
 
-  changeName(String name) {
-    emit(state.copyWith(name: name, status: Status.success));
-    print(state.toString());
+  changeName(String name, Status status) {
+    emit(state.copyWith(name: name, status: status));
   }
 }

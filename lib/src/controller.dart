@@ -32,7 +32,7 @@ abstract class Controller<T extends StateController> extends ValueNotifier<T> {
 /// you must pass the controller that the component needs to use
 /// to observe the changes.
 class ControllerBuilder<C extends Controller<S>, S extends StateController>
-    extends StatelessWidget {
+    extends StatefulWidget {
   const ControllerBuilder({
     super.key,
     required this.controller,
@@ -54,25 +54,40 @@ class ControllerBuilder<C extends Controller<S>, S extends StateController>
   final bool Function(S before, S after)? builderWhen;
 
   @override
+  State<ControllerBuilder> createState() => _ControllerBuilderState<C, S>();
+}
+
+class _ControllerBuilderState<C extends Controller<S>,
+    S extends StateController> extends State<ControllerBuilder<C, S>> {
+  late Widget _lastBuilder;
+
+  @override
   Widget build(BuildContext context) {
+    _lastBuilder = widget.builder(
+      context,
+      ControllerProvider.of<C>(context).state,
+    );
     return ValueListenableBuilder<S>(
-      valueListenable: controller,
+      valueListenable: widget.controller,
       builder: (_, state, child) {
-        if (listenWhen != null) {
+        if (widget.listenWhen != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            listenWhen!(
-              controller.state,
+            widget.listenWhen!(
+              widget.controller.state,
               state,
             );
           });
         }
-        if (builderWhen != null) {
-          if (builderWhen!(controller.last, state)) {
-            return builder(context, state);
+        if (widget.builderWhen != null) {
+          if (widget.builderWhen!(widget.controller.last, state)) {
+            _lastBuilder = widget.builder(context, state);
+            return widget.builder(context, state);
           }
-          return builder(context, controller.last);
+
+          return _lastBuilder;
         }
-        return builder(context, state);
+        _lastBuilder = widget.builder(context, state);
+        return widget.builder(context, state);
       },
     );
   }
@@ -81,8 +96,9 @@ class ControllerBuilder<C extends Controller<S>, S extends StateController>
 /// This widget should be used to reflect changes made to its states.
 /// It recovers the controllers through the injection of dependencies made
 /// in the [ControllerProvider]
+
 class ControllerConsumer<C extends Controller<S>, S extends StateController>
-    extends StatelessWidget {
+    extends StatefulWidget {
   const ControllerConsumer({
     super.key,
     required this.builder,
@@ -100,32 +116,44 @@ class ControllerConsumer<C extends Controller<S>, S extends StateController>
   final Widget Function(BuildContext context, S state) builder;
 
   @override
+  State<ControllerConsumer> createState() => _ControllerConsumerState<C, S>();
+}
+
+class _ControllerConsumerState<C extends Controller<S>,
+    S extends StateController> extends State<ControllerConsumer<C, S>> {
+  late Widget _lastBuilder;
+
+  @override
   Widget build(BuildContext context) {
+    _lastBuilder = widget.builder(
+      context,
+      ControllerProvider.of<C>(context).state,
+    );
+
     return ValueListenableBuilder<S>(
       valueListenable: ControllerProvider.of<C>(context),
       builder: (context, state, child) {
-        if (listenWhen != null) {
+        if (widget.listenWhen != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            listenWhen!(
+            widget.listenWhen!(
               ControllerProvider.of<C>(context).state,
               state,
             );
           });
         }
 
-        if (builderWhen != null) {
-          if (builderWhen!(
+        if (widget.builderWhen != null) {
+          if (widget.builderWhen!(
             ControllerProvider.of<C>(context).last,
             state,
           )) {
-            return builder(context, state);
+            _lastBuilder = widget.builder(context, state);
+            return widget.builder(context, state);
           }
-          return builder(
-            context,
-            ControllerProvider.of<C>(context).last,
-          );
+          return _lastBuilder;
         }
-        return builder(context, state);
+        _lastBuilder = widget.builder(context, state);
+        return widget.builder(context, state);
       },
     );
   }
