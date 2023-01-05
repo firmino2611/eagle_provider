@@ -11,10 +11,14 @@ class ControllerConsumer<C extends Controller<S>, S extends StateController>
   const ControllerConsumer({
     super.key,
     required this.builder,
+    this.controller,
     this.builderWhen,
     this.listenWhen,
     this.listener,
   });
+
+  /// Controller that will be used to detect changes
+  final C? controller;
 
   /// Rebuilds the widget only when the function result is true
   final bool Function(S before, S after)? builderWhen;
@@ -39,7 +43,7 @@ class ControllerConsumerState<C extends Controller<S>,
 
   @override
   Widget build(BuildContext context) {
-    var controller = ControllerProvider.of<C>(context);
+    var controller = widget.controller ?? ControllerProvider.of<C>(context);
 
     _lastBuilder = widget.builder(
       context,
@@ -48,16 +52,24 @@ class ControllerConsumerState<C extends Controller<S>,
 
     return ValueListenableBuilder<S>(
       valueListenable: controller,
+      child: _lastBuilder,
       builder: (context, state, child) {
         if (widget.listenWhen != null) {
-          if (widget.listenWhen!(controller.state, state)) {
+          if (widget.listenWhen!(controller.last, state)) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               widget.listener!(
-                controller.state,
+                controller.last,
                 state,
               );
             });
           }
+        } else {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            widget.listener?.call(
+              controller.last,
+              state,
+            );
+          });
         }
 
         if (widget.builderWhen != null) {

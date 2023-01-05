@@ -19,12 +19,19 @@ abstract class Controller<T extends StateController> extends ValueNotifier<T> {
   T get state => value;
   T get last => _last;
 
-  emit(T state) {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (_last != value) {
-        _last = value;
-      }
-      value = state;
-    });
+  emit(T state, [bool delayUpdate = false]) {
+    // if (delayUpdate) {
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    if (_last != value) {
+      _last = value;
+    }
+    value = state;
+    // });
+    // } else {
+    //   if (_last != value) {
+    //     _last = value;
+    //   }
+    //   value = state;
+    // }
   }
 }

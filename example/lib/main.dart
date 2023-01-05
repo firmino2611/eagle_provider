@@ -64,6 +64,11 @@ class MyHomePage extends StatelessWidget {
         // },
         // child: const Center(child: CircularProgressIndicator()),
         // listenWhen: (before, after) {},
+        listener: (before, after) {
+          debugPrint('LISTNER');
+          debugPrint(before.name);
+          debugPrint(after.name);
+        },
         builder: (context, state) {
           debugPrint(state.toString());
           if (state.status == Status.loading) {

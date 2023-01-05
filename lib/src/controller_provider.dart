@@ -21,10 +21,15 @@ class ControllerProvider extends InheritedWidget {
   }
 
   static T of<T>(BuildContext c) {
-    var provider = c.dependOnInheritedWidgetOfExactType<ControllerProvider>();
+    var provider =
+        c.getElementForInheritedWidgetOfExactType<ControllerProvider>();
     if (provider == null) {
       return ControllerProvider._controllersS!.whereType<T>().first;
     }
-    return provider._controllers!.whereType<T>().first;
+
+    return (provider.widget as ControllerProvider)
+        ._controllers!
+        .whereType<T>()
+        .first;
   }
 }
