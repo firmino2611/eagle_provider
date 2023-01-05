@@ -5,13 +5,17 @@ void main() {
   runApp(const MyApp());
 }
 
+class Dependence {
+  static final homeController = HomeController();
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ControllerProvider(
-      controllers: [HomeController()],
+      controllers: [Dependence.homeController],
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
@@ -23,12 +27,27 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class MyHomePage2 extends StatelessWidget {
+  const MyHomePage2({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var controller = ControllerProvider.of<HomeController>(context);
+    controller.changeName('Antonio', Status.failure);
+
+    return Scaffold(
+      appBar: AppBar(),
+    );
+  }
+}
+
 class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     var controller = ControllerProvider.of<HomeController>(context);
+    controller.changeName('Pryscilla', Status.initial);
 
     return Scaffold(
       appBar: AppBar(
@@ -40,11 +59,11 @@ class MyHomePage extends StatelessWidget {
         ),
       ),
       body: ControllerConsumer<HomeController, HomeState>(
-        builderWhen: (before, after) {
-          return before.name != after.name;
-        },
+        // builderWhen: (before, after) {
+        //   return before.name != after.name;
+        // },
         // child: const Center(child: CircularProgressIndicator()),
-        listenWhen: (before, after) {},
+        // listenWhen: (before, after) {},
         builder: (context, state) {
           debugPrint(state.toString());
           if (state.status == Status.loading) {
@@ -54,7 +73,11 @@ class MyHomePage extends StatelessWidget {
           return Center(
             child: GestureDetector(
               onTap: () {
-                controller.changeName('lucas', Status.loading);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const MyHomePage2(),
+                  ),
+                );
               },
               child: Text('Status ${state.status}, name: ${state.name}'),
             ),
@@ -77,7 +100,7 @@ class HomeState extends StateController {
   final String? name;
 
   @override
-  copyWith({
+  HomeState copyWith({
     Status? status,
     String? name,
   }) {
