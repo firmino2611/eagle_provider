@@ -1,3 +1,9 @@
+## 3.0.0
+- [add]: add method ```onChange``` in ```Controller``` to be implemented 
+by concrete subclasses to respond to changes in the state.
+- [change]: rename property ```builderWhen``` to ```buildWhen```
+- [refact]: Refactor code internal
+- [fix]: fix errors in update state
 ## 2.0.0
  - [add]: Add property ```listener``` in ```ControllerConsummer```
  - [change]: Change concepted property ```listenWhen``` in ```ControllerConsummer```

@@ -1,86 +1,77 @@
-import 'package:eagle_provider/src/controller.dart';
+import 'package:eagle_provider/src/contracts/controller.dart';
+import 'package:eagle_provider/src/contracts/state_controller.dart';
 import 'package:eagle_provider/src/controller_provider.dart';
-import 'package:eagle_provider/src/state_controller.dart';
 import 'package:flutter/material.dart';
 
-/// This widget should be used to reflect changes made to its states.
-/// It recovers the controllers through the injection of dependencies made
-/// in the [ControllerProvider]
-class ControllerConsumer<C extends Controller<S>, S extends StateController>
-    extends StatefulWidget {
-  const ControllerConsumer({
+/// A [StatelessWidget] that listens to a [Controller] and calls the [listener]
+/// whenever the [listenWhen] condition is met.
+///
+/// The widget also calls the [builder] whenever the [buildWhen] condition is met
+/// and returns the output of the [builder] as its child. If the [buildWhen] condition
+/// is not met, it returns the last output of the [builder].
+
+class ControllerConsummer<C extends Controller<S>, S extends StateController>
+    extends StatelessWidget {
+  const ControllerConsummer({
     super.key,
-    required this.builder,
     this.controller,
-    this.builderWhen,
-    this.listenWhen,
     this.listener,
+    required this.listenWhen,
+    this.buildWhen,
+    required this.builder,
   });
 
-  /// Controller that will be used to detect changes
-  final C? controller;
+  /// [listener] is a callback function that takes a [BuildContext]
+  /// and a [StateController] and is called whenever
+  /// the [listenWhen] condition is met.
+  final void Function(BuildContext context, S state)? listener;
 
-  /// Rebuilds the widget only when the function result is true
-  final bool Function(S before, S after)? builderWhen;
+  /// [listenWhen] is a condition that takes two [StateController] instances,
+  /// the previous state and the current state, and returns a boolean
+  /// indicating whether the [listener] should be called.
+  final bool Function(S previous, S current)? listenWhen;
 
-  /// Condition for some action to be performed after
-  /// the condition is satisfied
-  final bool Function(S before, S after)? listenWhen;
+  /// [buildWhen] is a condition that takes two [StateController] instances,
+  /// the previous state and the current state, and returns a boolean
+  /// indicating whether the [builder] should be called.
+  final bool Function(S previous, S current)? buildWhen;
 
-  /// Execute some function when [listenWhen] returns true
-  final void Function(S before, S after)? listener;
-
-  /// Widget that will be built on the screen
+  /// [builder] is a callback function that takes a [BuildContext]
+  /// and a [StateController] and returns a [Widget].
+  /// It is called whenever the [buildWhen] condition is met.
   final Widget Function(BuildContext context, S state) builder;
 
-  @override
-  State<ControllerConsumer> createState() => ControllerConsumerState<C, S>();
-}
-
-class ControllerConsumerState<C extends Controller<S>,
-    S extends StateController> extends State<ControllerConsumer<C, S>> {
-  late Widget _lastBuilder;
+  /// [controller] is the instance of the [Controller] that this widget should listen to.
+  /// If the [controller] is not provided, it tries to find it
+  /// using the [ControllerProvider.of] method.
+  final C? controller;
 
   @override
   Widget build(BuildContext context) {
-    var controller = widget.controller ?? ControllerProvider.of<C>(context);
+    final ctrl = controller ?? ControllerProvider.of<C>(context)!;
 
-    _lastBuilder = widget.builder(
-      context,
-      controller.state,
-    );
+    var lastBuilder = builder(context, ctrl.value);
 
     return ValueListenableBuilder<S>(
-      valueListenable: controller,
-      child: _lastBuilder,
+      valueListenable: ctrl,
       builder: (context, state, child) {
-        if (widget.listenWhen != null) {
-          if (widget.listenWhen!(controller.last, state)) {
+        if (listenWhen != null) {
+          if (listenWhen!(ctrl.previous, state)) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              widget.listener!(
-                controller.last,
-                state,
-              );
+              listener?.call(context, state);
             });
           }
-        } else {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            widget.listener?.call(
-              controller.last,
-              state,
-            );
-          });
+        }
+        if (buildWhen != null) {
+          if (buildWhen!(ctrl.previous, state)) {
+            lastBuilder = builder(context, state);
+            return builder(context, state);
+          }
+
+          return lastBuilder;
         }
 
-        if (widget.builderWhen != null) {
-          if (widget.builderWhen!(controller.last, state)) {
-            _lastBuilder = widget.builder(context, state);
-            return widget.builder(context, state);
-          }
-          return _lastBuilder;
-        }
-        _lastBuilder = widget.builder(context, state);
-        return widget.builder(context, state);
+        return lastBuilder;
       },
     );
   }

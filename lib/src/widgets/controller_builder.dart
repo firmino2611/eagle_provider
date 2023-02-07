@@ -1,56 +1,54 @@
-import 'package:eagle_provider/src/controller.dart';
-import 'package:eagle_provider/src/state_controller.dart';
+import 'package:eagle_provider/src/contracts/controller.dart';
+import 'package:eagle_provider/src/contracts/state_controller.dart';
+import 'package:eagle_provider/src/controller_provider.dart';
 import 'package:flutter/material.dart';
 
-/// This widget should be used to reflect changes made to its states.
-/// It contains a property called ```controller``` where
-/// you must pass the controller that the component needs to use
-/// to observe the changes.
+/// The widget also calls the [builder] whenever the [buildWhen] condition is met
+/// and returns the output of the [builder] as its child. If the [buildWhen] condition
+/// is not met, it returns the last output of the [builder].
 class ControllerBuilder<C extends Controller<S>, S extends StateController>
-    extends StatefulWidget {
+    extends StatelessWidget {
   const ControllerBuilder({
     super.key,
-    required this.controller,
+    this.controller,
+    this.buildWhen,
     required this.builder,
-    this.builderWhen,
   });
 
-  /// Controller that will be used to detect changes
-  final C controller;
+  /// [buildWhen] is a condition that takes two [StateController] instances,
+  /// the previous state and the current state, and returns a boolean
+  /// indicating whether the [builder] should be called.
+  final bool Function(S previous, S current)? buildWhen;
 
-  /// Widget that will be built on the screen
-  final Widget Function(BuildContext _, S state) builder;
+  /// [builder] is a callback function that takes a [BuildContext]
+  /// and a [StateController] and returns a [Widget].
+  /// It is called whenever the [buildWhen] condition is met.
+  final Widget Function(BuildContext context, S state) builder;
 
-  /// Rebuilds the widget only when the function result is true
-  final bool Function(S before, S after)? builderWhen;
-
-  @override
-  State<ControllerBuilder> createState() => _ControllerBuilderState<C, S>();
-}
-
-class _ControllerBuilderState<C extends Controller<S>,
-    S extends StateController> extends State<ControllerBuilder<C, S>> {
-  late Widget _lastBuilder;
+  /// [controller] is the instance of the [Controller] that this widget should listen to.
+  /// If the [controller] is not provided, it tries to find it
+  /// using the [ControllerProvider.of] method.
+  final C? controller;
 
   @override
   Widget build(BuildContext context) {
-    _lastBuilder = widget.builder(
-      context,
-      widget.controller.state,
-    );
+    final ctrl = controller ?? ControllerProvider.of<C>(context)!;
+
+    var lastBuilder = builder(context, ctrl.value);
+
     return ValueListenableBuilder<S>(
-      valueListenable: widget.controller,
-      builder: (_, state, child) {
-        if (widget.builderWhen != null) {
-          if (widget.builderWhen!(widget.controller.last, state)) {
-            _lastBuilder = widget.builder(context, state);
-            return widget.builder(context, state);
+      valueListenable: ctrl,
+      builder: (context, state, child) {
+        if (buildWhen != null) {
+          if (buildWhen!(ctrl.previous, state)) {
+            lastBuilder = builder(context, state);
+            return builder(context, state);
           }
 
-          return _lastBuilder;
+          return lastBuilder;
         }
-        _lastBuilder = widget.builder(context, state);
-        return widget.builder(context, state);
+
+        return lastBuilder;
       },
     );
   }

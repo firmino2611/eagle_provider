@@ -1,35 +1,29 @@
-import 'package:eagle_provider/src/controller.dart';
 import 'package:flutter/material.dart';
 
-/// Widget used to do dependency injection
-class ControllerProvider extends InheritedWidget {
-  ControllerProvider({
+/// A widget that provides a [Controller] to its descendants.
+class ControllerProvider<T> extends InheritedWidget {
+  final List<T> controllers;
+
+  /// Creates a [ControllerProvider].
+  const ControllerProvider({
     Key? key,
+    required this.controllers,
     required Widget child,
-    final List<Controller>? controllers,
-  }) : super(key: key, child: child) {
-    _controllers = controllers;
-    _controllersS = _controllers;
+  }) : super(key: key, child: child);
+
+  /// Retrieve a [Controller] from a [BuildContext].
+  static T? of<T>(BuildContext context) {
+    final ControllerProvider<T>? provider =
+        context.dependOnInheritedWidgetOfExactType<ControllerProvider<T>>();
+
+    if (provider == null) return null;
+    final T? controller = provider.controllers.whereType<T>().first;
+
+    return controller;
   }
 
-  late final List<Controller>? _controllers;
-  static List<Controller>? _controllersS;
-
+  /// Determines whether the [InheritedWidget] should be rebuilt.
   @override
-  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
-    return false;
-  }
-
-  static T of<T>(BuildContext c) {
-    var provider =
-        c.getElementForInheritedWidgetOfExactType<ControllerProvider>();
-    if (provider == null) {
-      return ControllerProvider._controllersS!.whereType<T>().first;
-    }
-
-    return (provider.widget as ControllerProvider)
-        ._controllers!
-        .whereType<T>()
-        .first;
-  }
+  bool updateShouldNotify(ControllerProvider oldWidget) =>
+      controllers != oldWidget.controllers;
 }
