@@ -4,6 +4,7 @@
 
 A simple state management package that uses only ValueNotifier and InheritedWidget.
 
+
 ## Usage
 
 To use it, just create a state class and another to be the state controller.
@@ -70,7 +71,12 @@ class MyApp extends StatelessWidget {
   }
 }
 ```
+## Usage of the ControllerBuilder
+The ControllerBuilder is a widget that allows you to build your user interface in a reactive way to the states controlled by your application.
 
+You can use the ControllerBuilder by passing your controller as a parameter or, if it is not passed, the widget will search for it in the widget tree using the ControllerProvider.
+
+The widget also calls the [builder] whenever the [buildWhen] condition is met and returns the output of the [builder] as its child. If the [buildWhen] condition is not met, it returns the last output of the [builder].
 To update your interface according to state changes, use the following widget:
 
 ```dart
@@ -90,8 +96,8 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Home page'),
       ),
-      body:  ControllerConsumer<HomeController, HomeState>(
-        builderWhen: (before, after) {
+      body:  ControllerBuilder<HomeController, HomeState>(
+        buildWhen: (before, after) {
           return before.status != after.status;
         },
         builder: (BuildContext context, state) {
