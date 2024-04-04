@@ -1,3 +1,5 @@
+## 3.1.0
+- [change]: update version sdk
 ## 3.0.0
 - [add]: add method ```onChange``` in ```Controller``` to be implemented 
 by concrete subclasses to respond to changes in the state.

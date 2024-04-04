@@ -41,7 +41,7 @@ class HomeController extends Controller<HomeState> {
   setName(String name) {
     emit(value.copyWith(
       name: name,
-      status: Status.success,
+      // status: Status.success,
     ));
   }
 
@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ElevatedButton(
             onPressed: () {
               controller!.setName('Sabrina');
-              controller.setStatus(Status.loading);
+              // controller.setStatus(Status.loading);
             },
             child: const Text('change'),
           ),
@@ -109,16 +109,20 @@ class _MyHomePageState extends State<MyHomePage> {
           return previous.name != current.name;
         },
         buildWhen: (previous, current) {
-          return previous.name != current.name ||
-              previous.status != current.status;
+          return previous.status != current.status;
         },
         builder: (context, state) {
-          if (state.status == Status.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          // if (state.status == Status.loading) {
+          //   return const Center(child: CircularProgressIndicator());
+          // }
 
           return Center(
-            child: Text(state.name.toString()),
+            child: Column(
+              children: [
+                Text(state.name.toString()),
+                Text(state.status.toString()),
+              ],
+            ),
           );
         },
       ),
